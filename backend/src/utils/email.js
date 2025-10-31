@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 
 // Создание транспорта для отправки email
-const createTransporter = () => {
-  return nodemailer.createTransporter({
+const createTransport = () => {
+  return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
     secure: false, // true для 465, false для других портов
@@ -15,7 +15,7 @@ const createTransporter = () => {
 
 // Отправка email для подтверждения регистрации
 export const sendVerificationEmail = async (email, name, token) => {
-  const transporter = createTransporter();
+  const transporter = createTransport();
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
   
   const mailOptions = {
@@ -52,7 +52,7 @@ export const sendVerificationEmail = async (email, name, token) => {
 
 // Отправка email для восстановления пароля
 export const sendPasswordResetEmail = async (email, name, token) => {
-  const transporter = createTransporter();
+  const transporter = createTransport();
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
   
   const mailOptions = {
@@ -90,7 +90,7 @@ export const sendPasswordResetEmail = async (email, name, token) => {
 
 // Отправка приглашения в проект
 export const sendProjectInvitation = async (email, projectName, inviterName, role, token) => {
-  const transporter = createTransporter();
+  const transporter = createTransport();
   const invitationUrl = `${process.env.FRONTEND_URL}/invitation?token=${token}`;
   
   const roleNames = {

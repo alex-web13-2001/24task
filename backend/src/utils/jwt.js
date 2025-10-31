@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 export const generateAccessToken = (userId) => {
   return jwt.sign(
     { userId },
-    process.env.JWT_ACCESS_SECRET,
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m' }
   );
 };
@@ -21,7 +21,7 @@ export const generateRefreshToken = (userId) => {
 // Верификация access токена
 export const verifyAccessToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    return jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
     return null;
   }
@@ -40,7 +40,7 @@ export const verifyRefreshToken = (token) => {
 export const generateEmailToken = () => {
   return jwt.sign(
     { random: Math.random() },
-    process.env.JWT_ACCESS_SECRET,
+    process.env.JWT_SECRET,
     { expiresIn: '72h' }
   );
 };

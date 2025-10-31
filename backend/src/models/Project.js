@@ -129,18 +129,22 @@ projectSchema.methods.hasAccess = function(userId, requiredRole = null) {
   const userIdStr = userId.toString();
   
   // Владелец имеет полный доступ
-  if (this.owner.toString() === userIdStr) {
+  // Проверяем и populated и непopulated owner
+  const ownerId = this.owner._id ? this.owner._id.toString() : this.owner.toString();
+  if (ownerId === userIdStr) {
     return true;
   }
   
   // Проверка участника
-  const member = this.members.find(m => m.user.toString() === userIdStr);
+  const member = this.members.find(m => {
+    const memberId = m.user._id ? m.user._id.toString() : m.user.toString();
+    return memberId === userIdStr;
+  });
   if (!member) return false;
   
   // Если требуется конкретная роль
   if (requiredRole) {
-    const roleHierarchy = { Owner: 4, Collaborator: 3, Member: 2, Viewer: 1 };
-    return roleHierarchy[member.role] >= roleHierarchy[requiredRole];
+    return member.role === requiredRole;
   }
   
   return true;
