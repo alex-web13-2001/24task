@@ -1,0 +1,392 @@
+/* ============================================
+   AUTH PAGES STYLES
+   ============================================ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--space-4);
+}
+
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1000px;
+  width: 100%;
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  animation: slideInUp var(--transition-base);
+}
+
+/* ============================================
+   LEFT SIDE - BRANDING
+   ============================================ */
+.auth-branding {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--space-12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: var(--color-white);
+}
+
+.auth-logo {
+  margin-bottom: var(--space-8);
+}
+
+.logo-icon-large {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--color-white);
+  margin: 0 auto var(--space-4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.brand-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+  color: var(--color-white);
+}
+
+.brand-description {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+/* ============================================
+   RIGHT SIDE - FORM
+   ============================================ */
+.auth-form-wrapper {
+  padding: var(--space-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-header {
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.auth-header h2 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.auth-header p {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+   ERROR MESSAGE
+   ============================================ */
+.auth-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-6);
+  animation: slideInDown var(--transition-fast);
+}
+
+.error-icon {
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-group label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  height: var(--input-height-lg);
+  padding: 0 var(--input-padding-x);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--input-border-radius);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all var(--transition-fast);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.form-hint {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ============================================
+   FORM FOOTER
+   ============================================ */
+.form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.checkbox-label span {
+  line-height: 1.2;
+}
+
+.forgot-link {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  transition: color var(--transition-fast);
+}
+
+.forgot-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn-primary {
+  width: 100%;
+  height: var(--btn-height-lg);
+  padding: 0 var(--btn-padding-x-lg);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--input-border-radius);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-large {
+  height: var(--btn-height-lg);
+}
+
+/* ============================================
+   SPINNER
+   ============================================ */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-white);
+  border-radius: var(--radius-full);
+  animation: spin 0.6s linear infinite;
+}
+
+/* ============================================
+   AUTH FOOTER
+   ============================================ */
+.auth-footer {
+  margin-top: var(--space-6);
+  text-align: center;
+}
+
+.auth-footer p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.auth-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-semibold);
+  transition: color var(--transition-fast);
+}
+
+.auth-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* ============================================
+   RESPONSIVE - TABLET
+   ============================================ */
+@media (max-width: 768px) {
+  .auth-container {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+  }
+
+  .auth-branding {
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .logo-icon-large {
+    width: 60px;
+    height: 60px;
+    font-size: var(--text-2xl);
+  }
+
+  .brand-title {
+    font-size: var(--text-3xl);
+  }
+
+  .brand-description {
+    font-size: var(--text-base);
+  }
+
+  .auth-form-wrapper {
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .auth-header h2 {
+    font-size: var(--text-2xl);
+  }
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+@media (max-width: 480px) {
+  .auth-page {
+    padding: var(--space-3);
+  }
+
+  .auth-branding {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .auth-form-wrapper {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .form-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .forgot-link {
+    align-self: flex-end;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

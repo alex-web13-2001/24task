@@ -1,138 +1,274 @@
-import { useQuery } from '@tanstack/react-query';
-import Layout from '../../components/layout/Layout';
-import { projectAPI, taskAPI, categoryAPI } from '../../services/api';
-import { ListTodo, FolderKanban, Tag, Clock, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import AppLayout from '../../components/layout/AppLayout';
+import api from '../../services/api';
+import './Dashboard.css';
 
 const DashboardPage = () => {
-  const { data: projects } = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => projectAPI.getAll({ status: 'active' })
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalTasks: 0,
+    completedTasks: 0,
+    inProgressTasks: 0,
+    overdueTasks: 0,
+    totalProjects: 0,
+    activeProjects: 0,
   });
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: tasks } = useQuery({
-    queryKey: ['dashboard-tasks'],
-    queryFn: () => taskAPI.getAll({})
-  });
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryAPI.getAll({})
-  });
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch projects
+      const projectsRes = await api.get('/projects');
+      const projects = projectsRes.data.projects || [];
+      
+      // Fetch all tasks from all projects
+      let allTasks = [];
+      for (const project of projects) {
+        try {
+          const tasksRes = await api.get(`/projects/${project._id}/tasks`);
+          allTasks = [...allTasks, ...(tasksRes.data.tasks || [])];
+        } catch (err) {
+          console.error(`Error fetching tasks for project ${project._id}:`, err);
+        }
+      }
 
-  const projectsCount = projects?.data?.data?.projects?.length || 0;
-  const tasksCount = tasks?.data?.data?.tasks?.length || 0;
-  const categoriesCount = categories?.data?.data?.categories?.length || 0;
+      // Calculate statistics
+      const now = new Date();
+      const completedTasks = allTasks.filter(t => t.status === 'Выполнено');
+      const inProgressTasks = allTasks.filter(t => t.status === 'В работе');
+      const overdueTasks = allTasks.filter(t => {
+        if (!t.dueDate || t.status === 'Выполнено') return false;
+        return new Date(t.dueDate) < now;
+      });
 
-  const recentTasks = tasks?.data?.data?.tasks?.slice(0, 5) || [];
-  const overdueTasks = recentTasks.filter(task => 
-    task.deadline && new Date(task.deadline) < new Date() && task.status !== 'Done'
-  );
+      setStats({
+        totalTasks: allTasks.length,
+        completedTasks: completedTasks.length,
+        inProgressTasks: inProgressTasks.length,
+        overdueTasks: overdueTasks.length,
+        totalProjects: projects.length,
+        activeProjects: projects.filter(p => !p.isArchived).length,
+      });
+
+      // Get recent tasks (last 5)
+      const sortedTasks = allTasks
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+      setRecentTasks(sortedTasks);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'Новая': 'status-new',
+      'В работе': 'status-progress',
+      'На проверке': 'status-review',
+      'Выполнено': 'status-done',
+    };
+    return colors[status] || 'status-new';
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      'Низкий': 'priority-low',
+      'Средний': 'priority-medium',
+      'Высокий': 'priority-high',
+    };
+    return colors[priority] || 'priority-medium';
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="dashboard-loading">
+          <div className="spinner-large"></div>
+          <p>Загрузка данных...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
-    <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Дашборд</h1>
-        <p className="text-gray-600">Обзор ваших задач и проектов</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-700">Всего задач</h3>
-            <ListTodo className="w-5 h-5 text-primary" />
+    <AppLayout>
+      <div className="dashboard">
+        {/* Header */}
+        <div className="dashboard-header">
+          <div>
+            <h1>Добро пожаловать, {user?.name}!</h1>
+            <p className="dashboard-subtitle">
+              Вот обзор ваших задач и проектов
+            </p>
           </div>
-          <p className="text-3xl font-bold">{tasksCount}</p>
-          <p className="text-sm text-gray-500 mt-2">Активных задач</p>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-700">Проектов</h3>
-            <FolderKanban className="w-5 h-5 text-primary" />
-          </div>
-          <p className="text-3xl font-bold">{projectsCount}</p>
-          <p className="text-sm text-gray-500 mt-2">Активных проектов</p>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-700">Категорий</h3>
-            <Tag className="w-5 h-5 text-primary" />
-          </div>
-          <p className="text-3xl font-bold">{categoriesCount}</p>
-          <p className="text-sm text-gray-500 mt-2">Созданных категорий</p>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-700">Просрочено</h3>
-            <AlertCircle className="w-5 h-5 text-error" />
-          </div>
-          <p className="text-3xl font-bold text-error">{overdueTasks.length}</p>
-          <p className="text-sm text-gray-500 mt-2">Просроченных задач</p>
-        </div>
-      </div>
-
-      {/* Recent Tasks */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Последние задачи</h2>
-          <Link to="/projects" className="text-sm text-primary hover:underline">
-            Все задачи →
+          <Link to="/projects" className="btn-primary">
+            <span>+</span>
+            Создать проект
           </Link>
         </div>
 
-        {recentTasks.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <ListTodo className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>У вас пока нет задач</p>
-            <p className="text-sm mt-2">Создайте первую задачу или проект</p>
-            <Link to="/projects" className="btn btn-primary mt-4">
-              Создать проект
+        {/* Statistics Cards */}
+        <div className="stats-grid">
+          <div className="stat-card stat-primary">
+            <div className="stat-icon">📋</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.totalTasks}</div>
+              <div className="stat-label">Всего задач</div>
+            </div>
+          </div>
+
+          <div className="stat-card stat-success">
+            <div className="stat-icon">✅</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.completedTasks}</div>
+              <div className="stat-label">Выполнено</div>
+            </div>
+          </div>
+
+          <div className="stat-card stat-warning">
+            <div className="stat-icon">⏳</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.inProgressTasks}</div>
+              <div className="stat-label">В работе</div>
+            </div>
+          </div>
+
+          <div className="stat-card stat-danger">
+            <div className="stat-icon">⚠️</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.overdueTasks}</div>
+              <div className="stat-label">Просрочено</div>
+            </div>
+          </div>
+
+          <div className="stat-card stat-info">
+            <div className="stat-icon">📁</div>
+            <div className="stat-content">
+              <div className="stat-value">{stats.activeProjects}</div>
+              <div className="stat-label">Активных проектов</div>
+            </div>
+          </div>
+
+          <div className="stat-card stat-secondary">
+            <div className="stat-icon">📊</div>
+            <div className="stat-content">
+              <div className="stat-value">
+                {stats.totalTasks > 0
+                  ? Math.round((stats.completedTasks / stats.totalTasks) * 100)
+                  : 0}%
+              </div>
+              <div className="stat-label">Прогресс</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Tasks */}
+        <div className="dashboard-section">
+          <div className="section-header">
+            <h2>Последние задачи</h2>
+            <Link to="/projects" className="section-link">
+              Все задачи →
             </Link>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {recentTasks.map((task) => (
-              <div
-                key={task._id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium">{task.title}</h3>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
-                    {task.project && (
-                      <span className="flex items-center gap-1">
-                        <FolderKanban className="w-4 h-4" />
-                        {task.project.name}
-                      </span>
+
+          {recentTasks.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📝</div>
+              <h3>Нет задач</h3>
+              <p>Создайте проект и добавьте первую задачу</p>
+              <Link to="/projects" className="btn-primary">
+                Создать проект
+              </Link>
+            </div>
+          ) : (
+            <div className="tasks-list">
+              {recentTasks.map((task) => (
+                <div key={task._id} className="task-item">
+                  <div className="task-main">
+                    <div className="task-title">{task.title}</div>
+                    {task.description && (
+                      <div className="task-description">{task.description}</div>
                     )}
-                    {task.deadline && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {new Date(task.deadline).toLocaleDateString('ru-RU')}
+                  </div>
+                  <div className="task-meta">
+                    <span className={`task-status ${getStatusColor(task.status)}`}>
+                      {task.status}
+                    </span>
+                    <span className={`task-priority ${getPriorityColor(task.priority)}`}>
+                      {task.priority}
+                    </span>
+                    {task.dueDate && (
+                      <span className="task-date">
+                        📅 {formatDate(task.dueDate)}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`badge ${
-                    task.priority === 'Urgent' ? 'badge-error' :
-                    task.priority === 'High' ? 'badge-warning' :
-                    'badge-primary'
-                  }`}>
-                    {task.priority}
-                  </span>
-                  <span className="badge badge-primary">{task.status}</span>
-                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="dashboard-section">
+          <h2>Быстрые действия</h2>
+          <div className="quick-actions">
+            <Link to="/projects" className="action-card">
+              <div className="action-icon">📁</div>
+              <div className="action-title">Проекты</div>
+              <div className="action-description">
+                Управление проектами и задачами
               </div>
-            ))}
+            </Link>
+
+            <Link to="/personal-tasks" className="action-card">
+              <div className="action-icon">✏️</div>
+              <div className="action-title">Личные задачи</div>
+              <div className="action-description">
+                Ваши персональные задачи
+              </div>
+            </Link>
+
+            <Link to="/categories" className="action-card">
+              <div className="action-icon">🏷️</div>
+              <div className="action-title">Категории</div>
+              <div className="action-description">
+                Управление категориями
+              </div>
+            </Link>
+
+            <Link to="/profile" className="action-card">
+              <div className="action-icon">👤</div>
+              <div className="action-title">Профиль</div>
+              <div className="action-description">
+                Настройки аккаунта
+              </div>
+            </Link>
           </div>
-        )}
+        </div>
       </div>
-    </Layout>
+    </AppLayout>
   );
 };
 

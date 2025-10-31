@@ -1,113 +1,138 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import toast from 'react-hot-toast';
-import { LogIn } from 'lucide-react';
+import './AuthPages.css';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
-    const result = await login(formData.email, formData.password);
-
-    if (result.success) {
-      toast.success('Вход выполнен успешно!');
-      navigate('/dashboard');
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.message || 'Ошибка входа');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка входа');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
-            <LogIn className="w-8 h-8 text-white" />
+    <div className="auth-page">
+      <div className="auth-container">
+        {/* Left side - Branding */}
+        <div className="auth-branding">
+          <div className="auth-logo">
+            <div className="logo-icon-large">T24</div>
+            <h1 className="brand-title">Task24</h1>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Добро пожаловать!</h1>
-          <p className="text-secondary">Войдите в свой аккаунт Task24</p>
+          <p className="brand-description">
+            Современный менеджер задач для эффективной работы команды
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="input"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
+        {/* Right side - Form */}
+        <div className="auth-form-wrapper">
+          <div className="auth-form-container">
+            <div className="auth-header">
+              <h2>Вход в систему</h2>
+              <p>Введите свои данные для входа</p>
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">
-              Пароль
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="input"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <Link to="/forgot-password" className="text-primary hover:underline">
-              Забыли пароль?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary w-full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Вход...
-              </>
-            ) : (
-              'Войти'
+            {error && (
+              <div className="auth-error">
+                <span className="error-icon">⚠️</span>
+                <span>{error}</span>
+              </div>
             )}
-          </button>
-        </form>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-secondary">Нет аккаунта? </span>
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Зарегистрироваться
-          </Link>
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="your@email.com"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">Пароль</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <div className="form-footer">
+                <label className="checkbox-label">
+                  <input type="checkbox" />
+                  <span>Запомнить меня</span>
+                </label>
+                <Link to="/forgot-password" className="forgot-link">
+                  Забыли пароль?
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                className="btn-primary btn-large"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    <span>Вход...</span>
+                  </>
+                ) : (
+                  'Войти'
+                )}
+              </button>
+            </form>
+
+            <div className="auth-footer">
+              <p>
+                Нет аккаунта?{' '}
+                <Link to="/register" className="auth-link">
+                  Зарегистрироваться
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

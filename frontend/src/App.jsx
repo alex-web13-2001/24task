@@ -1,31 +1,21 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import ProjectsPage from './pages/projects/ProjectsPage';
-import ProjectDetailPage from './pages/projects/ProjectDetailPage';
-import PersonalTasksPage from './pages/tasks/PersonalTasksPage';
+import ProjectsListPage from './pages/projects/ProjectsListPage';
+import ProjectKanbanPage from './pages/projects/ProjectKanbanPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import ProfilePage from './pages/profile/ProfilePage';
-import ArchivePage from './pages/archive/ArchivePage';
 
-import './styles/index.css';
 
-// React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000
-    }
-  }
-});
+import './styles/designSystem.css';
+import './styles/global.css';
+
+
 
 // Protected Route
 const ProtectedRoute = ({ children }) => {
@@ -63,12 +53,11 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
-      <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
-      <Route path="/personal-tasks" element={<ProtectedRoute><PersonalTasksPage /></ProtectedRoute>} />
+      <Route path="/projects" element={<ProtectedRoute><ProjectsListPage /></ProtectedRoute>} />
+      <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectKanbanPage /></ProtectedRoute>} />
       <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/archive" element={<ProtectedRoute><ArchivePage /></ProtectedRoute>} />
+
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -77,14 +66,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <AuthProvider>
-          <AppRoutes />
-          <Toaster position="top-right" />
-        </AuthProvider>
-      </Router>
-    </QueryClientProvider>
+    <Router>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </Router>
   );
 }
 

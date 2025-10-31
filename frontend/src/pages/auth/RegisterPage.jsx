@@ -1,157 +1,183 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import toast from 'react-hot-toast';
-import { UserPlus } from 'lucide-react';
+import './AuthPages.css';
 
 const RegisterPage = () => {
-  const navigate = useNavigate();
-  const { register } = useAuth();
-  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
+    // Validation
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Пароли не совпадают');
+      setError('Пароли не совпадают');
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.error('Пароль должен содержать минимум 8 символов');
+      setError('Пароль должен содержать минимум 8 символов');
       return;
     }
 
     setLoading(true);
 
-    const result = await register(formData);
-
-    if (result.success) {
-      toast.success('Регистрация успешна! Проверьте email для подтверждения');
-      navigate('/login');
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await register(formData);
+      if (result.success) {
+        navigate('/login');
+      } else {
+        setError(result.message || 'Ошибка регистрации');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка регистрации');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
-            <UserPlus className="w-8 h-8 text-white" />
+    <div className="auth-page">
+      <div className="auth-container">
+        {/* Left side - Branding */}
+        <div className="auth-branding">
+          <div className="auth-logo">
+            <div className="logo-icon-large">T24</div>
+            <h1 className="brand-title">Task24</h1>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Создать аккаунт</h1>
-          <p className="text-secondary">Присоединяйтесь к Task24 сегодня</p>
+          <p className="brand-description">
+            Присоединяйтесь к тысячам команд, которые уже используют Task24
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-2">
-              Имя
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="input"
-              placeholder="Ваше имя"
-              required
-              minLength={2}
-            />
-          </div>
+        {/* Right side - Form */}
+        <div className="auth-form-wrapper">
+          <div className="auth-form-container">
+            <div className="auth-header">
+              <h2>Создать аккаунт</h2>
+              <p>Заполните форму для регистрации</p>
+            </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="input"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">
-              Пароль
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="input"
-              placeholder="••••••••"
-              required
-              minLength={8}
-            />
-            <p className="text-xs text-secondary mt-1">
-              Минимум 8 символов, 1 цифра и 1 буква
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-              Подтвердите пароль
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="input"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary w-full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Регистрация...
-              </>
-            ) : (
-              'Зарегистрироваться'
+            {error && (
+              <div className="auth-error">
+                <span className="error-icon">⚠️</span>
+                <span>{error}</span>
+              </div>
             )}
-          </button>
-        </form>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-secondary">Уже есть аккаунт? </span>
-          <Link to="/login" className="text-primary font-medium hover:underline">
-            Войти
-          </Link>
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="name">Имя</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Иван Иванов"
+                  required
+                  autoComplete="name"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="your@email.com"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">Пароль</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                />
+                <small className="form-hint">
+                  Минимум 8 символов, 1 цифра и 1 буква
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Подтвердите пароль</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <label className="checkbox-label">
+                <input type="checkbox" required />
+                <span>
+                  Я согласен с{' '}
+                  <a href="/terms" className="auth-link">
+                    условиями использования
+                  </a>
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                className="btn-primary btn-large"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    <span>Регистрация...</span>
+                  </>
+                ) : (
+                  'Зарегистрироваться'
+                )}
+              </button>
+            </form>
+
+            <div className="auth-footer">
+              <p>
+                Уже есть аккаунт?{' '}
+                <Link to="/login" className="auth-link">
+                  Войти
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
